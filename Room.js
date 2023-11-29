@@ -21,7 +21,6 @@ class Room {
     if (!ROOMS.has(roomName)) {
       ROOMS.set(roomName, new Room(roomName));
     }
-
     return ROOMS.get(roomName);
   }
 
@@ -38,6 +37,15 @@ class Room {
     this.members.add(member);
   }
 
+  uniqueUsername(username) {
+    for (let user of this.members) {  
+      if(user.name === username) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /** member leaving a room. */
 
   leave(member) {
@@ -49,6 +57,16 @@ class Room {
   broadcast(data) {
     for (let member of this.members) {
       member.send(JSON.stringify(data));
+    }
+  }
+
+  /** send message to one member in a room */
+
+  privateMessage(username,data) {
+    for (let member of this.members) {
+      if (member.name === username) {
+        member.send(JSON.stringify(data));
+      }
     }
   }
 }

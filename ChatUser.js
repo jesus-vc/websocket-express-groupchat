@@ -3,6 +3,8 @@
 // Room is an abstraction of a chat channel
 const Room = require('./Room');
 
+const getJoke = require('./services/getJokeService');
+
 /** ChatUser is a individual connection from client -> server to chat. */
 
 class ChatUser {
@@ -29,13 +31,20 @@ class ChatUser {
   /** handle joining: add to room members, announce join */
 
   handleJoin(name) {
+    if (this.room.uniqueUsername(name)) {
     this.name = name;
     this.room.join(this);
     this.room.broadcast({
       type: 'note',
       text: `${this.name} joined "${this.room.name}".`
     });
+    }
+    else {
+      //PEER should I have created and called a User class method to send this message
+      // rather than sending it directly here? 
+      this.send(JSON.stringify({type: 'duplicateUser'}));
   }
+}
 
   /** handle a chat: broadcast to room. */
 
@@ -47,6 +56,15 @@ class ChatUser {
     });
   }
 
+
+  async handleJoke(username) {
+    const joke = await getJoke();
+    this.room.privateMessage(username,{
+      type: 'note',
+      text: `Hello, ${this.name}. Here is your private joke: ${joke}.`
+    });
+  }
+
   /** Handle messages from client:
    *
    * - {type: "join", name: username} : join
@@ -54,10 +72,21 @@ class ChatUser {
    */
 
   handleMessage(jsonData) {
+
     let msg = JSON.parse(jsonData);
 
-    if (msg.type === 'join') this.handleJoin(msg.name);
-    else if (msg.type === 'chat') this.handleChat(msg.text);
+    if (msg.type === 'join') {
+      this.handleJoin(msg.name);
+    }
+    
+    else if (msg.type === 'chat') {
+      this.handleChat(msg.text);
+    }
+
+    else if (msg.type === 'getJoke') {
+      this.handleJoke(msg.name);
+    }
+
     else throw new Error(`bad message: ${msg.type}`);
   }
 
@@ -71,5 +100,6 @@ class ChatUser {
     });
   }
 }
+
 
 module.exports = ChatUser;
