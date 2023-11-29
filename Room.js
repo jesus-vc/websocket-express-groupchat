@@ -38,8 +38,8 @@ class Room {
   }
 
   uniqueUsername(username) {
-    for (let user of this.members) {  
-      if(user.name === username) {
+    for (let user of this.members) {
+      if (user.name === username) {
         return false;
       }
     }
@@ -62,7 +62,7 @@ class Room {
 
   /** send message to one member in a room */
 
-  privateMessage(username,data) {
+  privateMessage(username, data) {
     for (let member of this.members) {
       if (member.name === username) {
         member.send(JSON.stringify(data));
